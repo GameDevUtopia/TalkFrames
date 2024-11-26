@@ -12,6 +12,5 @@ def main():
     final = Transitions.apply_transition([clip1,clip2,clip3,clip4],transitions,duration)
     # final.preview(fps=24)
     final.write_videofile("output_video_ts.mp4") 
-
 if __name__ == "__main__":  
     main()

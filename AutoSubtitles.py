@@ -2,6 +2,7 @@ import os
 from whisper import load_model
 from moviepy.editor import VideoFileClip,VideoClip,CompositeVideoClip,TextClip
 from moviepy.video.tools.subtitles import SubtitlesClip
+from pprint import pprint
 class AutoSubtitles:
     def __init__(self,video_path:str):
         """
@@ -46,15 +47,18 @@ class AutoSubtitles:
         self.get_audio()
         print("Generating subtitles...")
         model = load_model("base")
-        result = model.transcribe(self.audio_path)
+        result = model.transcribe(self.audio_path,word_timestamps=True)
+        pprint(result)
         os.remove(self.audio_path)
         print("Writing subtitles ...")
         subtitles = []
-        for i, segment in enumerate(result["segments"]):
+        for i, segment in enumerate(result['segments'][0]['words']):
             start = segment["start"]
             end = segment["end"]
-            text = segment["text"]
+            text = segment["word"]
             subtitles.append(((start, end), text))
+        print("---------------------------------------------------")
+        pprint(subtitles)
         return subtitles
 
     def write_subtitles(self,font: str = "Arial", font_size: int = 24, color: str = "white",bg_color: str = "transparent")->VideoClip:
@@ -89,10 +93,10 @@ def main():
     font_size = 36
     color = "black"
     subtitles = AutoSubtitles(video_path)
-    sub = subtitles.get_subtitles()
-    print(sub)
+    #sub = subtitles.get_subtitles()
+    
     final =subtitles.write_subtitles(font,font_size,color)
-    final.write_videofile(output_path)
+    # final.write_videofile(output_path)
 
     
     

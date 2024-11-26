@@ -1,4 +1,4 @@
-from moviepy.editor import VideoClip,CompositeVideoClip,VideoFileClip,ImageClip,ColorClip
+from moviepy.editor import VideoClip,CompositeVideoClip,VideoFileClip
 from moviepy.video.tools.drawing import circle,color_gradient
 
 def apply_transition(clips:list , transitions:list , duration:list)->VideoClip:
@@ -51,17 +51,36 @@ def CircleClip(clip1: VideoClip, clip2: VideoClip, duration: float) -> VideoClip
    
     print(clip.mask)
     return CompositeVideoClip([clip1.subclip(0,clip1.end-duration),clip.set_start(clip1.end-duration), clip2.set_start(clip1.end)])
+def Slide(clip1: VideoClip, clip2: VideoClip,slide_duration: float,duration: float ) -> VideoClip:
+    start_x = clip1.w  
+    end_x = (clip1.w - clip2.w) // 2  
+    y = (clip1.h - clip2.h) // 2  
+    
+
+    def slide_right_to_middle(t):
+        if t <= slide_duration:
+            
+            return (start_x - (start_x - end_x) * (t / slide_duration), y)
+        else:
+
+            return (end_x, y)
+    
+    # Apply the position function to clip2 during the sliding phase
+    sliding_clip = clip2.set_position(slide_right_to_middle).set_start(0).set_duration(slide_duration+duration)
+            
+    return CompositeVideoClip([clip1,sliding_clip])
 def main():
     
     clip = VideoFileClip("Test_video.mp4")
     
-    clip1 = clip.subclip(0, 5)
-    clip2 = clip.subclip(5, 10)
+    clip1 = clip.subclip(0, 15)
+    clip2 = clip.subclip(5, 10).resize(width=clip1.w/2,height=clip1.h/2)
     clip3 = clip.subclip(10, 18)
-    clips = [clip1,clip2,clip3]
-    transtions = ["crossfade","fadein"]
-    duration = [3,3]
-    final =apply_transition(clips,transtions,duration)
+    # clips = [clip1,clip2,clip3]
+    # transtions = ["crossfade","fadein"]
+    # duration = [3,3]
+    # final =apply_transition(clips,transtions,duration)
+    final = Slide(clip1,clip2,1,5)
     final.write_videofile("output_video_t.mp4")
 
 if __name__ == "__main__":
